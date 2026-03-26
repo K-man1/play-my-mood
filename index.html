@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+
+
+  <title>Playlist Vibes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PLAY MY MOOD</h1>
+    <p class="subtitle">Find songs from your playlist based on your mood!</p>
+ 
+    <div class="search-bar">
+        <input class="playlistID"type="text" placeholder="Paste the link to your YT Music or YT playlist">
+        <button class="playlistID" onclick="setID()">Search for playlist</button>
+        
+        <br>
+
+        <input id="vibe" placeholder='Type a vibe like "hype", "sad", "chill"...' />
+        <button onclick="search()">Find Songs</button>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+    <div id="results" class="results"></div>
+  </div>
+  <script>
+    async function setID() {
+      const playlistLink = document.getElementById('playlistID').value;
+      const res = await fetch('/api/set-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playlistLink })
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert(`Loaded ${result.count} songs from the playlist!`);
+      } else {
+        alert('Error: ' + result.error);
+      }
+    }
+
+    async function search() {
+      const vibe = document.getElementById('vibe').value;
+      const res = await fetch('/api/filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vibe })
+      });
+      const songs = await res.json();
+      const html = songs.map(s => `
+        <div>
+          <img src="${s.thumbnail}" width="120" />
+          <a href="https://youtube.com/watch?v=${s.videoId}" target="_blank">${s.title}</a>
+        </div>
+      `).join('');
+      document.getElementById('results').innerHTML = html || 'No matches found.';
+    }
+  </script>
+</body>
+</html>
