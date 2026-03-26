@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
-
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
   <title>Playlist Vibes</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,23 +11,205 @@
   <div class="container">
     <h1>PLAY MY MOOD</h1>
     <p class="subtitle">Find songs from your playlist based on your mood!</p>
- 
-    <div class="search-bar">
-        <input class="playlistID"type="text" placeholder="Paste the link to your YT Music or YT playlist">
-        <button class="playlistID" onclick="setID()">Search for playlist</button>
-        
-        <br>
 
+    <div class="search-bar">
+      <input id="playlistID" type="text" placeholder="Paste the link to your YT Music or YT playlist">
+      <br>
+      <button onclick="setID()">Search for playlist</button>
+      <br>
+      <br>  
+      <div id="vibe-section" class="hidden">
         <input id="vibe" placeholder='Type a vibe like "hype", "sad", "chill"...' />
         <button onclick="search()">Find Songs</button>
+      </div>
     </div>
 
     <div id="status" class="status hidden"></div>
-    <div id="results" class="results"></div>
+
+    <!-- Player section -->
+    <div id="player-section" class="hidden">
+      <div class="player-layout">
+
+        <!-- Left: embed + info + controls -->
+        <div class="player-left">
+          <div id="yt-player"></div>
+          <div class="now-playing-info">
+            <div id="now-playing-title">—</div>
+            <div id="now-playing-channel"></div>
+          </div>
+          <div class="controls">
+            <button id="btn-prev" class="ctrl-btn" title="Previous" onclick="prevTrack()">⏮</button>
+            <button id="btn-shuffle" class="ctrl-btn" title="Shuffle" onclick="toggleShuffle()">⇄</button>
+            <button id="btn-loop" class="ctrl-btn" title="Loop" onclick="toggleLoop()">↺</button>
+            <button id="btn-next" class="ctrl-btn" title="Next" onclick="nextTrack()">⏭</button>
+          </div>
+          <div id="mode-labels" class="mode-labels">
+            <span id="label-shuffle">Shuffle: Off</span>
+            &nbsp;|&nbsp;
+            <span id="label-loop">Loop: Off</span>
+            &nbsp;|&nbsp;
+            <span id="label-autoplay">Autoplay: On</span>
+          </div>
+        </div>
+
+        <!-- Right: track list -->
+        <div class="track-list" id="track-list"></div>
+      </div>
+    </div>
   </div>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+    // ── State ──────────────────────────────────────────────
+    let allSongs = [];          // full playlist from YouTube
+    let playlist = [];          // current (possibly shuffled) order
+    let originalPlaylist = [];  // pre-shuffle order
+    let currentIndex = -1;
+    let isShuffled = false;
+    let loopMode = 'none';      // 'none' | 'one' | 'all'
+    let autoplay = true;
+    let ytPlayer = null;
+    let playerReady = false;
+    let pendingVideoId = null;
+
+    // ── YouTube IFrame API ─────────────────────────────────
+    function onYouTubeIframeAPIReady() {
+      window.ytApiReady = true;
+    }
+
+    function initPlayer(videoId) {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '270',
+        width: '480',
+        videoId: videoId,
+        playerVars: { autoplay: 1, rel: 0 },
+        events: {
+          onReady: () => {
+            playerReady = true;
+            if (pendingVideoId) {
+              ytPlayer.loadVideoById(pendingVideoId);
+              pendingVideoId = null;
+            }
+          },
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED) {
+        if (loopMode === 'one') {
+          ytPlayer.playVideo();
+        } else if (autoplay) {
+          const next = currentIndex + 1;
+          if (next < playlist.length) {
+            playTrack(next);
+          } else if (loopMode === 'all') {
+            playTrack(0);
+          }
+        }
+      }
+    }
+
+    // ── Playback ───────────────────────────────────────────
+    function playTrack(index) {
+      currentIndex = index;
+      const song = playlist[index];
+
+      // Update now-playing info
+      document.getElementById('now-playing-title').textContent = song.title;
+      document.getElementById('now-playing-channel').textContent = song.channel;
+
+      // Load video
+      if (!ytPlayer) {
+        initPlayer(song.videoId);
+      } else if (playerReady) {
+        ytPlayer.loadVideoById(song.videoId);
+      } else {
+        pendingVideoId = song.videoId;
+      }
+
+      // Highlight active track
+      document.querySelectorAll('.track-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+      });
+    }
+
+    function nextTrack() {
+      if (!playlist.length) return;
+      const next = (currentIndex + 1) % playlist.length;
+      playTrack(next);
+    }
+
+    function prevTrack() {
+      if (!playlist.length) return;
+      const prev = (currentIndex - 1 + playlist.length) % playlist.length;
+      playTrack(prev);
+    }
+
+    // ── Controls ───────────────────────────────────────────
+    function toggleShuffle() {
+      isShuffled = !isShuffled;
+      const btn = document.getElementById('btn-shuffle');
+      const lbl = document.getElementById('label-shuffle');
+      if (isShuffled) {
+        const current = playlist[currentIndex];
+        playlist = [...originalPlaylist].sort(() => Math.random() - 0.5);
+        currentIndex = playlist.findIndex(s => s.videoId === current?.videoId);
+        btn.classList.add('active');
+        lbl.textContent = 'Shuffle: On';
+      } else {
+        const current = playlist[currentIndex];
+        playlist = [...originalPlaylist];
+        currentIndex = playlist.findIndex(s => s.videoId === current?.videoId);
+        btn.classList.remove('active');
+        lbl.textContent = 'Shuffle: Off';
+      }
+      renderTrackList();
+    }
+
+    function toggleLoop() {
+      const modes = ['none', 'all', 'one'];
+      loopMode = modes[(modes.indexOf(loopMode) + 1) % modes.length];
+      const btn = document.getElementById('btn-loop');
+      const lbl = document.getElementById('label-loop');
+      const labels = { none: 'Loop: Off', all: 'Loop: All', one: 'Loop: One' };
+      btn.classList.toggle('active', loopMode !== 'none');
+      lbl.textContent = labels[loopMode];
+    }
+
+    function toggleAutoplay() {
+      autoplay = !autoplay;
+      const btn = document.getElementById('btn-autoplay');
+      const lbl = document.getElementById('label-autoplay');
+      btn.classList.toggle('active', autoplay);
+      lbl.textContent = autoplay ? 'Autoplay: On' : 'Autoplay: Off';
+    }
+
+    // ── Render track list ──────────────────────────────────
+    function renderTrackList() {
+      const container = document.getElementById('track-list');
+      container.innerHTML = playlist.map((s, i) => `
+        <div class="track-item ${i === currentIndex ? 'active' : ''}" onclick="playTrack(${i})">
+          <span class="track-num">${i + 1}</span>
+          <img class="track-thumb" src="${s.thumbnail}" alt="" />
+          <div class="track-info">
+            <div class="track-title">${s.title}</div>
+            <div class="track-channel">${s.channel}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── API calls ──────────────────────────────────────────
     async function setID() {
       const playlistLink = document.getElementById('playlistID').value;
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = 'Loading playlist...';
+      statusDiv.classList.remove('hidden');
+      statusDiv.style.color = 'white';
+
       const res = await fetch('/api/set-playlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,27 +217,49 @@
       });
       const result = await res.json();
       if (res.ok) {
-        alert(`Loaded ${result.count} songs from the playlist!`);
+        allSongs = result.songs;
+        statusDiv.classList.add('hidden');
+        document.getElementById('vibe-section').classList.remove('hidden');
       } else {
-        alert('Error: ' + result.error);
+        statusDiv.textContent = 'Error: ' + result.error;
+        statusDiv.style.color = 'red';
+        statusDiv.classList.remove('hidden');
       }
     }
 
     async function search() {
       const vibe = document.getElementById('vibe').value;
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = 'Finding songs for your vibe...';
+      statusDiv.style.color = 'white';
+      statusDiv.classList.remove('hidden');
+
       const res = await fetch('/api/filter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vibe })
+        body: JSON.stringify({ songs: allSongs, vibe })
       });
       const songs = await res.json();
-      const html = songs.map(s => `
-        <div>
-          <img src="${s.thumbnail}" width="120" />
-          <a href="https://youtube.com/watch?v=${s.videoId}" target="_blank">${s.title}</a>
-        </div>
-      `).join('');
-      document.getElementById('results').innerHTML = html || 'No matches found.';
+
+      statusDiv.classList.add('hidden');
+
+      if (!songs.length) {
+        statusDiv.textContent = 'No matches found.';
+        statusDiv.style.color = 'red';
+        statusDiv.classList.remove('hidden');
+        return;
+      }
+
+      originalPlaylist = songs;
+      playlist = [...songs];
+      currentIndex = -1;
+      isShuffled = false;
+      document.getElementById('btn-shuffle').classList.remove('active');
+      document.getElementById('label-shuffle').textContent = 'Shuffle: Off';
+
+      document.getElementById('player-section').classList.remove('hidden');
+      renderTrackList();
+      playTrack(0);
     }
   </script>
 </body>

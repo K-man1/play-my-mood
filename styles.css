@@ -1,7 +1,7 @@
 * {
     font-family: "Oswald", sans-serif;
-    background-color:black;
-    color: white;
+    background-color:#151515;
+    color: rgb(255, 66, 66);
 }
 h1 {
     font-size: 50px;
@@ -13,15 +13,26 @@ h1 {
 }
 
 .container {
+    text-align: center;
 }
 
 input {
-    background-color:red;
-    padding: 10px 100px;
+    background-color:white;
+    padding: 10px 10px;
+    width: 500px;
+    height: 25px;
     font-size: 15px;
     margin-bottom: 20px;
     color: black;
     border-color: antiquewhite;
+    border-radius: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    font-size: 15px;
+    background-color: rgb(255, 66, 66);
+    color: black;
 }
 
 ::placeholder {
@@ -29,6 +40,224 @@ input {
     text-align: left;
 }
 
-input::placeholder {
-  text-align: right;
+.hidden {
+    display: none;
+}
+
+.status {
+    margin: 20px 0;
+    font-size: 18px;
+    color: red;
+}
+
+/* ── Player layout ─────────────────────────────────────── */
+#player-section {
+    margin-top: 32px;
+}
+
+.player-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    text-align: left;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ── Left column ───────────────────────────────────────── */
+.player-left {
+    flex: 0 0 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#yt-player {
+    width: 480px;
+    height: 270px;
+    background: #0d0d0d;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#yt-player iframe {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 10px;
+}
+
+.now-playing-info {
+    padding: 0 4px;
+}
+
+#now-playing-title {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: white;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#now-playing-channel {
+    font-size: 13px;
+    color: #999;
+    margin-top: 4px;
+    font-weight: 300;
+}
+
+/* ── Controls ──────────────────────────────────────────── */
+.controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.ctrl-btn {
+    flex: 1;
+    padding: 10px 0;
+    font-size: 18px;
+    background-color: #1e1e1e;
+    color: #aaa;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.ctrl-btn:hover {
+    background-color: #2a2a2a;
+    color: white;
+}
+
+.ctrl-btn.active {
+    background-color: rgb(255, 66, 66);
+    color: black;
+    border-color: rgb(255, 66, 66);
+}
+
+.mode-labels {
+    font-size: 12px;
+    color: #666;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+/* ── Track list ────────────────────────────────────────── */
+.track-list {
+    flex: 1;
+    max-height: 520px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 4px;
+}
+
+.track-list::-webkit-scrollbar {
+    width: 5px;
+}
+.track-list::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+.track-list::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #1a1a1a;
+    border: 1px solid transparent;
+    transition: background-color 0.15s;
+}
+
+.track-item:hover {
+    background-color: #222;
+    border-color: #333;
+}
+
+.track-item.active {
+    background-color: #2a0000;
+    border-color: rgb(255, 66, 66);
+}
+
+.track-num {
+    font-size: 13px;
+    color: #555;
+    width: 22px;
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 300;
+}
+
+.track-item.active .track-num {
+    color: rgb(255, 66, 66);
+}
+
+.track-thumb {
+    width: 56px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 5px;
+    flex-shrink: 0;
+}
+
+.track-info {
+    min-width: 0;
+}
+
+.track-title {
+    font-size: 14px;
+    font-weight: 400;
+    color: #ddd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-item.active .track-title {
+    color: white;
+}
+
+.track-channel {
+    font-size: 12px;
+    color: #666;
+    font-weight: 300;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 780px) {
+    .player-layout {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .player-left {
+        flex: unset;
+        width: 100%;
+        max-width: 480px;
+    }
+
+    #yt-player {
+        width: 100%;
+    }
+
+    .track-list {
+        width: 100%;
+        max-width: 480px;
+        max-height: 320px;
+    }
 }
