@@ -111,7 +111,3 @@ app.post('/api/filter', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-
-app.listen(process.env.PORT, () => {
-  console.log(`Running on http://localhost:${process.env.PORT}`);
-});

@@ -1,7 +1,104 @@
-* {
+
+
+body {
     font-family: "Oswald", sans-serif;
-    background-color:#151515;
+    background-color: black;
     color: rgb(255, 66, 66);
+}
+
+.light * {
+    background-color: white;
+    color: rgb(142, 0, 0);
+}
+
+.light input {
+    background-color: black;
+    color: rgb(158, 1, 1);
+}
+
+.light ::placeholder {
+    color:white;
+}
+
+.light button {
+    background-color: rgb(200, 30, 30);
+    color: white;
+}
+
+.light #yt-player {
+    background: #ccc;
+}
+
+.light #now-playing-title {
+    color: #111;
+}
+
+.light #now-playing-channel {
+    color: #555;
+}
+
+.light .ctrl-btn {
+    background-color: #ddd;
+    color: #444;
+    border-color: #bbb;
+}
+
+.light .ctrl-btn:hover {
+    background-color: #ccc;
+    color: #111;
+}
+
+.light .ctrl-btn.active {
+    background-color: rgb(200, 30, 30);
+    color: white;
+    border-color: rgb(200, 30, 30);
+}
+
+.light .mode-labels {
+    color: #888;
+}
+
+.light .track-list::-webkit-scrollbar-track {
+    background: #ddd;
+}
+
+.light .track-list::-webkit-scrollbar-thumb {
+    background: #aaa;
+}
+
+.light .track-item {
+    background-color: #e8e8e8;
+    border-color: transparent;
+}
+
+.light .track-item:hover {
+    background-color: #ddd;
+    border-color: #bbb;
+}
+
+.light .track-item.active {
+    background-color: #ffd0d0;
+    border-color: rgb(200, 30, 30);
+}
+
+.light .track-num {
+    color: #999;
+}
+
+.light .track-item.active .track-num {
+    color: rgb(200, 30, 30);
+}
+
+.light .track-title {
+    color: #222;
+}
+
+.light .track-item.active .track-title {
+    color: #000;
+}
+
+.light .track-channel {
+    color: #777;
 }
 h1 {
     font-size: 50px;

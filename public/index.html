@@ -10,6 +10,7 @@
 <body>
   <div class="container">
     <h1>PLAY MY MOOD</h1>
+    <button onclick="toggleTheme()">⏾</button>
     <p class="subtitle">Find songs from your playlist based on your mood!</p>
 
     <div class="search-bar">
@@ -61,6 +62,10 @@
   <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
+
+    function toggleTheme() {                                                                                             
+      document.documentElement.classList.toggle('light');                                                                
+    }
     // ── State ──────────────────────────────────────────────
     let allSongs = [];          // full playlist from YouTube
     let playlist = [];          // current (possibly shuffled) order
